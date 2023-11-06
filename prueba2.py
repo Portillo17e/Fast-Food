@@ -1,5 +1,46 @@
 import queue
+import random
+
+class Client:
+    def __init__(self, dpi = "NA", fname = "Consumidor final", nit = "cf") -> None:
+        #self._dpi = dpi
+        self._name = fname
+        self._nit = nit
+        self._orders = 0
+        self._discount = 0
+
+    def add_order(self):
+        self.orders += 1
+        # Cada 15 ordenes se le dará un descuento aleatorio entre 20% y 30% 
+        if self.orders % 15 == 0 and self._nit != "cf":
+            self.discount = random.randint(20, 30)
+
+    def get_orders(self):
+        return self._orders
+    
+    def get_name(self):
+        return self._name
+    def set_name(self, name):
+        self._name = name
+    
+    # def get_dpi(self):
+    #     return self._dpi
+    # def set_dpi(self, dpi):
+    #     self._dpi = dpi
+    
+    def get_nit(self):
+        return self._nit
+    def set_nit(self, nit):
+        self._nit = nit
+    
+    def discount(self):
+        return self.discount
+    
+    def __str__(self) -> str:
+        return f"Nit: {self._nit}\nNombre: {self._name}"
+
 class Restaurante:
+
     def __init__(self):
         self.menu = {}
         self.stock = {}
@@ -18,9 +59,11 @@ class Restaurante:
         else:
             self.stock[item_name] = quantity
 
-    def take_order(self, customer_name, items):
-        order = {"customer": customer_name, "items": items, "status": "pendiente"}
+    def take_order(self, nit, items):
+        order_number = self.orders[0]["number"] + 1 if self.orders else 1
+        order = {"number": order_number, "customer": nit, "items": items, "status": "pendiente"}
         self.orders.append(order)
+        return order_number
 
     def prepare_order(self, order):
         order["status"] = "en preparación"
@@ -34,8 +77,8 @@ class Restaurante:
         total_cost = sum(self.menu[item] * quantity for item, quantity in order["items"].items())
         return total_cost
 
-    def register_customer(self, customer_name, customer_info):
-        self.customers[customer_name] = customer_info
+    def register_customer(self, nit, customer):
+        self.customers[nit] = customer
 
 
 #funcion para actualizar stock de platillos 
@@ -94,13 +137,27 @@ def menu_admin(restaurant):
 
 
 #funcion para crear pedidos
-def add_orden(restaurante):
+def add_orden(restaurante:Restaurante):
     while True:
         print("\n*** Menú ***")
         for item, price in restaurante.menu.items():
             print(f"{item}: ${price}")
 
-        customer_name = input("\nNombre del cliente: ")
+        # customer_name = input("\nNombre del cliente: ")
+        
+        # TODO Buscar entre los clientes almacenados segun el nit
+        customer_nit = input("\nNumero de Nit: ")
+       # if not customer_nit:
+        #    customer_nit = "cf"
+        if customer_nit in restaurante.customers:
+            print(restaurante.customers[customer_nit])
+        elif not customer_nit:
+            customer_nit = "cf"
+        else:
+            customer_name = input("Nombre del cliente: ")
+            customer = Client(nit=customer_nit, fname=customer_name)
+            restaurante.register_customer(customer_nit, customer)
+            
 
         items = {}
         while True:
@@ -117,8 +174,8 @@ def add_orden(restaurante):
                 print("Producto no encontrado en el menú.")
 
         if items:
-            restaurante.take_order(customer_name, items)
-            print("Pedido registrado con éxito.")
+            number = restaurante.take_order(customer_nit, items)
+            print(f"Pedido No.{number} registrado con éxito.")
 
         continuar = input("\n¿Desea tomar otro pedido? (Sí/No): ").lower()
         if continuar != 'sí':
@@ -126,14 +183,14 @@ def add_orden(restaurante):
 
     for order in restaurante.orders:
         restaurante.prepare_order(order)
-        print(f"Pedido para {order['customer']} está {order['status']}.")
+        print(f"Pedido {order['number']} para {restaurante.customers[order['customer']].get_name()} está {order['status']}.")
 
     for order in restaurante.orders:
         invoice = restaurante.generate_invoice(order)
         print(f"Factura para {order['customer']}: ${invoice}")
 
     for customer, info in restaurante.customers.items():
-        print(f"Información del cliente {customer}: {info}")
+        print(f"Información del cliente\n{info}")
 
 #funcion principal del proyecto
 def main():
@@ -143,6 +200,7 @@ def main():
    restaurante.add_menu_item("Bebida", 2.99)
    restaurante.update_stock("Pizza", 10)
    restaurante.update_stock("Bebida", 20)
+   restaurante.register_customer("cf", Client())
    while True:
         action = input('Que desea realizar:\n1.Realizar pedido\n2.Procesos administrativos\n3.Salir\n') 
         match(action):
