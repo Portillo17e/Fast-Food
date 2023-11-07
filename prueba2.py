@@ -136,7 +136,7 @@ def add_orden(restaurante:Restaurante):
             restaurante.register_customer(customer_nit, customer)
         #endregion
 
-        #region Busqueda anterior por metodo 'in'
+        #region Busqueda anterior por metodo 'if in dict'
         #if customer_nit in restaurante.customers:
         #    print(restaurante.customers[customer_nit])
         #elif not customer_nit:
