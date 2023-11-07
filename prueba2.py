@@ -1,5 +1,6 @@
 import queue
 import random
+from factura import Invoice
 
 class Client:
     def __init__(self, dpi = "NA", fname = "Consumidor final", nit = "cf") -> None:
@@ -33,8 +34,12 @@ class Client:
     def set_nit(self, nit):
         self._nit = nit
     
-    def discount(self):
+    def get_discount(self):
         return self.discount
+    def use_discount(self):
+        discount = self.discount
+        self.discount = 0
+        return discount
     
     def __str__(self) -> str:
         return f"Nit: {self._nit}\nNombre: {self._name}"
@@ -59,6 +64,9 @@ class Restaurante:
         else:
             self.stock[item_name] = quantity
 
+    # Estructura de la orden
+    # number, nit, items {name: (quant, price)}, status 
+
     def take_order(self, nit, items):
         order_number = self.orders[0]["number"] + 1 if self.orders else 1
         order = {"number": order_number, "customer": nit, "items": items, "status": "pendiente"}
@@ -67,14 +75,17 @@ class Restaurante:
 
     def prepare_order(self, order):
         order["status"] = "en preparación"
-        for item, quantity in order["items"].items():
+        for item in order["items"]:
+            quantity = order["items"][item][0]
             self.stock[item] -= quantity
 
     def complete_order(self, order):
         order["status"] = "listo para servir"
 
     def generate_invoice(self, order):
-        total_cost = sum(self.menu[item] * quantity for item, quantity in order["items"].items())
+        invoice = Invoice(order, self.customers[order["customer"]])
+        return invoice
+        total_cost = sum(order["items"][item][1] * order["items"][item][0] for item in order["items"])
         return total_cost
 
     def register_customer(self, nit, customer):
@@ -167,7 +178,8 @@ def add_orden(restaurante:Restaurante):
             if item_name in restaurante.menu:
                 quantity = int(input(f"Cantidad de {item_name}: "))
                 if item_name in restaurante.stock and quantity <= restaurante.stock[item_name]:
-                    items[item_name] = quantity
+                    price = restaurante.menu[item_name]
+                    items[item_name] = (quantity, price)
                 else:
                     print("Producto no disponible en la cantidad solicitada.")
             else:
