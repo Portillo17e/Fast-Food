@@ -54,4 +54,16 @@ class Invoice:
         # No of orders for next discount
 
         detail = self.generate_detail()
-        return f"{'Nombre del restaurante'}\n{datetime.datetime.now().date()}\n{self.order['number']}\n{self.customer}\n{detail}\n\tTotal: {self.total}"
+        next_discount = 15 - self.customer.get_orders()
+        discount_text = ""
+        discount = 0
+        if next_discount == 14:
+            discount =  self.customer.use_discount()
+        elif next_discount == 0:
+            discount_text += f"Felicidades ha obtenido un descuento de {self.customer.get_discount()}% en su proxima compra"
+        else:
+            discount_text += f"{next_discount} compras restantes para el próximo descuento"
+        discounted = self.total * (discount/100)
+        total = self.total - discounted 
+            
+        return f"{'Nombre del restaurante'}\n{datetime.datetime.now().date()}\n{self.order['number']}\n{self.customer}\n{detail}\n\tDescuento de {discount}%: {discounted}\n\tTotal: {total}\n{discount_text}"
