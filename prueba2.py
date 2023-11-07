@@ -104,6 +104,13 @@ def menu_admin(restaurant):
             case __:
                 print('Ingreso una opcion fuera del reango!')
 
+#region
+def buscar_cliente(clientes, nit):
+    for key in clientes:
+        if nit == key:
+            return nit
+    return -1
+#endregion
 
 
 #funcion para crear pedidos
@@ -117,17 +124,28 @@ def add_orden(restaurante:Restaurante):
         
         # TODO Buscar entre los clientes almacenados segun el nit
         customer_nit = input("\nNumero de Nit: ")
-       # if not customer_nit:
-        #    customer_nit = "cf"
-        if customer_nit in restaurante.customers:
-            print(restaurante.customers[customer_nit])
-        elif not customer_nit:
+        if not customer_nit:
             customer_nit = "cf"
+        
+        #region busqueda secuencial
+        if buscar_cliente(restaurante.customers, customer_nit) != -1:
+            print(restaurante.customers[customer_nit])
         else:
             customer_name = input("Nombre del cliente: ")
             customer = Customer(nit=customer_nit, fname=customer_name)
             restaurante.register_customer(customer_nit, customer)
-            
+        #endregion
+
+        #region Busqueda anterior por metodo 'in'
+        #if customer_nit in restaurante.customers:
+        #    print(restaurante.customers[customer_nit])
+        #elif not customer_nit:
+        #    customer_nit = "cf"
+        #else:
+        #    customer_name = input("Nombre del cliente: ")
+        #    customer = Customer(nit=customer_nit, fname=customer_name)
+        #    restaurante.register_customer(customer_nit, customer)
+        #endregion   
 
         items = {}
         while True:
