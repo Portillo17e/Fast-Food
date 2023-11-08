@@ -1,15 +1,17 @@
 import queue
 from factura import Invoice
 from Customer import Customer
-from collections import deque
+
+#TODO Implementar la entrega de las ordenes
 
 class Restaurante:
 
     def __init__(self):
         self.menu = {}
         self.stock = {}
-        self.orders = deque ()
-        self.customers = deque ()
+        self.orders = queue.Queue()
+        self.completed_orders = []
+        self.customers = {}
 
     def add_menu_item(self, item_name, price):
         self.menu[item_name] = price
@@ -27,19 +29,24 @@ class Restaurante:
     # number, nit, items {name: (quant, price)}, status 
 
     def take_order(self, nit, items):
-        order_number = self.orders[0]["number"] + 1 if self.orders else 1
+        order_number = self.orders.queue[0]["number"] + 1 if not self.orders.empty() else 1
         order = {"number": order_number, "customer": nit, "items": items, "status": "pendiente"}
-        self.orders.append(order)
+        self.orders.put(order)
+        self.prepare_order(order)
         return order_number
 
     def prepare_order(self, order):
-        order["status"] = "en preparación"
+        order["status"] = "Listo para servir"
         for item in order["items"]:
             quantity = order["items"][item][0]
             self.stock[item] -= quantity
 
     def complete_order(self, order):
-        order["status"] = "listo para servir"
+        order["status"] = "Listo para servir"
+
+    def hand_order(self, order):
+        order["status"] = "Entregada"
+        self.completed_orders.append(order)
 
     def generate_invoice(self, order):
         invoice = Invoice(order, self.customers[order["customer"]])
@@ -149,8 +156,8 @@ def add_orden(restaurante:Restaurante):
 
         items = {}
         while True:
-            item_name = input("Nombre del producto (o 'fin' para finalizar el pedido): ")
-            if item_name == 'fin':
+            item_name = input("Nombre del producto (o 'fin' para finalizar el pedido): ").title()
+            if item_name == 'Fin':
                 break
             if item_name in restaurante.menu:
                 quantity = int(input(f"Cantidad de {item_name}: "))
@@ -167,19 +174,19 @@ def add_orden(restaurante:Restaurante):
             print(f"Pedido No.{number} registrado con éxito.")
 
         continuar = input("\n¿Desea tomar otro pedido? (Sí/No): ").lower()
-        if continuar != 'sí':
+        if continuar != 'sí' or continuar != 'si':
             break
 
-    for order in restaurante.orders:
+    for order in restaurante.orders.queue:
         restaurante.prepare_order(order)
         print(f"Pedido {order['number']} para {restaurante.customers[order['customer']].get_name()} está {order['status']}.")
 
-    for order in restaurante.orders:
+    for order in restaurante.orders.queue:
         invoice = restaurante.generate_invoice(order)
         print(f"Factura para {order['customer']}: ${invoice}")
 
-    for customer, info in restaurante.customers.items():
-        print(f"Información del cliente\n{info}")
+#    for customer, info in restaurante.customers.items():
+#        print(f"Información del cliente\n{info}")
 
 #funcion principal del proyecto
 def main():
@@ -191,12 +198,21 @@ def main():
    restaurante.update_stock("Bebida", 20)
    restaurante.register_customer("cf", Customer())
    while True:
-        action = input('Que desea realizar:\n1.Realizar pedido\n2.Procesos administrativos\n3.Salir\n') 
+        action = input('Que desea realizar:'
+                       +'\n1.Tomar pedido'
+                       +'\n2.Preparar pedido'
+                       +'\n3.Entregar pedido'
+                       +'\n4.Procesos administrativos'
+                       +'\n5.Salir\n') 
         match(action):
                 case '1':
                     add_orden(restaurante)
                     print()
                 case '2':
+                    pass
+                case '3':
+                    pass
+                case '4':
                     for _ in range(2):
                         user = input('Ingrese el nombre de usuario:\n')
                         password = input('Ingrese la contraseña de administrador:\n')
@@ -204,7 +220,7 @@ def main():
                         if user == 'admin' and password == 'admin123':
                             menu_admin(restaurante)
                             break
-                case '3':
+                case '5':
                     break
 
 
