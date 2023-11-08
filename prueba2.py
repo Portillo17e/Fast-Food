@@ -1,15 +1,15 @@
 import queue
 from factura import Invoice
 from Customer import Customer
-
+from collections import deque
 
 class Restaurante:
 
     def __init__(self):
         self.menu = {}
         self.stock = {}
-        self.orders = []
-        self.customers = {}
+        self.orders = deque ()
+        self.customers = deque ()
 
     def add_menu_item(self, item_name, price):
         self.menu[item_name] = price
