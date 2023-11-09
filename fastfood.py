@@ -70,14 +70,29 @@ class Restaurante:
         for order in self.orders_ready.queue:
             orders_txt += f"Orden {order['number']} para {self.customers[order['customer']].get_name()}\n"
         return orders_txt
+    
+    def todays_orders(self):
+        orders = "Ordenes realizadas durante el turno\n"
+        for x in self.completed_orders:
+            orders += f"Orden No. {x['number']} para {self.customers[x['customer']].get_name()} {x['status']}\n"
+        for x in self.orders_ready.queue:
+            orders += f"Orden No. {x['number']} para {self.customers[x['customer']].get_name()} {x['status']}\n"
+        for x in self.orders.queue:
+            orders += f"Orden No. {x['number']} para {self.customers[x['customer']].get_name()} {x['status']}\n"
+        return orders
 
 #funcion para actualizar stock de platillos 
-def update_stock(restaurant):
+def update_stock(restaurant, product = ''):
+    print("Inventario actual")
+    for x in restaurant.stock:
+        print(f"{x} {restaurant.stock[x]}")
+
     try:
-        product = input('Ingrese el nombre del producto: \n')
+        if not product:
+            product = input('Ingrese el nombre del producto: \n')
         new_stock = input('Ingrese la cantidad que desea agregar al stock acctual: \n')
         while not new_stock.isnumeric():
-            new_stock = int(input('Ingrese la cantidad que desea agregar al stock acctual: \n'))
+            new_stock = input('Ingrese la cantidad que desea agregar al stock acctual: \n')
         new_stock = int(new_stock)
         if product in restaurant.stock:
             restaurant.update_stock(product, new_stock)
@@ -108,6 +123,7 @@ def add_menu(restaurant):
         product = input('Ingrese el nombre del producto: \n')
         price = float(input('Ingrese el nuevo precio del producto: \n'))
         restaurant.add_menu_item(product, price)
+        update_stock(restaurant, product)
         print('Producto agregado correctamente!')
     except ValueError:
         print('Se ingreso un tipo de valor incorrecto!')
@@ -117,7 +133,7 @@ def menu_admin(restaurant):
     while True:
         #aqui se añaden las opciones de ver el estado de las ordenes
         print('Bienvenido al sistema del restaurante')
-        action = input('Que desea realizar:\n1.Agregar alimentos al menu\n2.Actualizar stock de alimentos\n3.Actualizar precios de alimentos\n4.Salir\n') 
+        action = input('Que desea realizar:\n1.Agregar alimentos al menu\n2.Actualizar stock de alimentos\n3.Actualizar precios de alimentos\n4.Ver las ordenes que se han realizado hoy\n5. Ver los clientes registrados\n6.Salir\n') 
 
         match(action):
             case '1':
@@ -127,9 +143,15 @@ def menu_admin(restaurant):
             case '3':
                 update_price(restaurant)
             case '4':
+                print(restaurant.todays_orders())
+            case '5':
+                for nit in restaurant.customers:
+                    print(restaurant.customers[nit])
+            case '6':
                 break
             case __:
                 print('Ingreso una opcion fuera del reango!')
+        input()
 
 #region
 def buscar_cliente(clientes, nit):
@@ -248,6 +270,8 @@ def main():
                             menu_admin(restaurante)
                             break
                 case '5':
+                    print("Resumen de ordenes de hoy")
+                    print(restaurante.todays_orders())
                     break
         input()
         print(restaurante.show_orders())
