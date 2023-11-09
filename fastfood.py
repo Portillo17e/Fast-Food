@@ -133,7 +133,7 @@ def menu_admin(restaurant):
     while True:
         #aqui se añaden las opciones de ver el estado de las ordenes
         print('Bienvenido al sistema del restaurante')
-        action = input('Que desea realizar:\n1.Agregar alimentos al menu\n2.Actualizar stock de alimentos\n3.Actualizar precios de alimentos\n4.Ver las ordenes que se han realizado hoy\n6.Salir\n') 
+        action = input('Que desea realizar:\n1.Agregar alimentos al menu\n2.Actualizar stock de alimentos\n3.Actualizar precios de alimentos\n4.Ver las ordenes que se han realizado hoy\n5. Ver los clientes registrados\n6.Salir\n') 
 
         match(action):
             case '1':
@@ -145,11 +145,13 @@ def menu_admin(restaurant):
             case '4':
                 print(restaurant.todays_orders())
             case '5':
-                pass
+                for nit in restaurant.customers:
+                    print(restaurant.customers[nit])
             case '6':
                 break
             case __:
                 print('Ingreso una opcion fuera del reango!')
+        input()
 
 #region
 def buscar_cliente(clientes, nit):
