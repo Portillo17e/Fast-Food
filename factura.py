@@ -20,6 +20,7 @@ class Invoice:
         #Order: number, nit, items {name, quant}, status
         #Order: number, nit, items {name, (quant, price)}, status
         self.total = 0
+        self.discount = 0
         #self.items = ""
         self.order = order
         self.customer_name = order["customer"]
@@ -37,7 +38,8 @@ class Invoice:
             self.total += subtotal
         return "\n\t" + "\n\t".join(self.order_items).title()
 
-    
+    def apply_discount(self):
+        pass
     def __str__(self) -> str:
         #items = '\t'+str(self.order_items).replace(',','\n\t').replace('\'',"").replace('[',"").replace(']',"")
         
@@ -54,15 +56,14 @@ class Invoice:
         # No of orders for next discount
 
         detail = self.generate_detail()
-        next_discount = 15 - self.customer.get_orders()
+        next_discount = self.customer.next_discount()
         discount_text = ""
         discount = 0
-        if next_discount == 14:
+        if next_discount == 4:
             discount =  self.customer.use_discount()
-        elif next_discount == 0:
-            discount_text += f"Felicidades ha obtenido un descuento de {self.customer.get_discount()}% en su proxima compra"
-        else:
-            discount_text += f"{next_discount} compras restantes para el próximo descuento"
+        elif next_discount == 5:
+            discount_text += f"Felicidades ha obtenido un descuento de {self.customer.get_discount()}% en su proxima compra\n"
+        discount_text += f"{next_discount} compras restantes para el próximo descuento"
         discounted = self.total * (discount/100)
         total = self.total - discounted 
             

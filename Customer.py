@@ -9,10 +9,10 @@ class Customer:
         self._discount = 0
 
     def add_order(self):
-        self.orders += 1
-        # Cada 15 ordenes se le dará un descuento aleatorio entre 20% y 30% 
-        if self.orders % 15 == 0 and self._nit != "cf":
-            self.discount = random.randint(20, 30)
+        self._orders += 1
+        # Cada 5 ordenes se le dará un descuento aleatorio entre 20% y 30% 
+        if self._orders % 5 == 0 and self._nit != "cf":
+            self._discount = random.randint(20, 30)
 
     def get_orders(self):
         return self._orders
@@ -33,11 +33,13 @@ class Customer:
         self._nit = nit
     
     def get_discount(self):
-        return self.discount
+        return self._discount
     def use_discount(self):
-        discount = self.discount
-        self.discount = 0
+        discount = self._discount
+        self._discount = 0
         return discount
+    def next_discount(self):
+        return 5-(self._orders%5)
     
     def __str__(self) -> str:
         return f"Nit: {self._nit}\nNombre: {self._name}"
