@@ -2,7 +2,6 @@ import queue
 from factura import Invoice
 from Customer import Customer
 
-#TODO Implementar la entrega de las ordenes
 
 class Restaurante:
 
@@ -10,6 +9,7 @@ class Restaurante:
         self.menu = {}
         self.stock = {}
         self.orders = queue.Queue()
+        self.orders_ready = queue.Queue()
         self.completed_orders = []
         self.customers = {}
 
@@ -32,21 +32,26 @@ class Restaurante:
         order_number = self.orders.queue[0]["number"] + 1 if not self.orders.empty() else 1
         order = {"number": order_number, "customer": nit, "items": items, "status": "pendiente"}
         self.orders.put(order)
-        self.prepare_order(order)
-        return order_number
+        return order
 
-    def prepare_order(self, order):
+    def prepare_order(self):
+        if self.orders.empty():
+            return "No hay ordenes pendientes de preparar"
+        order = self.orders.get()
         order["status"] = "Listo para servir"
         for item in order["items"]:
             quantity = order["items"][item][0]
             self.stock[item] -= quantity
+        self.orders_ready.put(order)
+        return f"Orden {order['number']} {order['status']}"
 
-    def complete_order(self, order):
-        order["status"] = "Listo para servir"
-
-    def hand_order(self, order):
+    def complete_order(self):
+        if self.orders_ready.empty():
+            return "No hay ordenees pendientes de entrega"
+        order = self.orders_ready.get()
         order["status"] = "Entregada"
         self.completed_orders.append(order)
+        return f"Orden {order['number']} {order['status']}"
 
     def generate_invoice(self, order):
         invoice = Invoice(order, self.customers[order["customer"]])
@@ -57,6 +62,13 @@ class Restaurante:
     def register_customer(self, nit, customer):
         self.customers[nit] = customer
 
+    def show_orders(self):
+        orders_txt = "Ordenes listas\n"
+        if self.orders.empty():
+            return "No hay ordenes listas"
+        for order in self.orders_ready.queue:
+            orders_txt += f"Orden {order['number']}\n"
+        return orders_txt
 
 #funcion para actualizar stock de platillos 
 def update_stock(restaurant):
@@ -170,34 +182,39 @@ def add_orden(restaurante:Restaurante):
                 print("Producto no encontrado en el menú.")
 
         if items:
-            number = restaurante.take_order(customer_nit, items)
-            print(f"Pedido No.{number} registrado con éxito.")
+            order = restaurante.take_order(customer_nit, items)
+            print(restaurante.generate_invoice(order))
+            
+            print(f"Pedido No.{order['number']} pendiente de preparacion.")
+            
 
         continuar = input("\n¿Desea tomar otro pedido? (Sí/No): ").lower()
-        if continuar != 'sí' or continuar != 'si':
+        if  not continuar in ('sí','si'):
             break
 
-    for order in restaurante.orders.queue:
-        restaurante.prepare_order(order)
-        print(f"Pedido {order['number']} para {restaurante.customers[order['customer']].get_name()} está {order['status']}.")
-
-    for order in restaurante.orders.queue:
-        invoice = restaurante.generate_invoice(order)
-        print(f"Factura para {order['customer']}: ${invoice}")
+#pruebas
+#    for order in restaurante.orders.queue:
+#        restaurante.prepare_order(order)
+#        print(f"Pedido {order['number']} para {restaurante.customers[order['customer']].get_name()} está {order['status']}.")
+#
+#    for order in restaurante.orders.queue:
+#        invoice = restaurante.generate_invoice(order)
+#        print(f"Factura para {order['customer']}: ${invoice}")
 
 #    for customer, info in restaurante.customers.items():
 #        print(f"Información del cliente\n{info}")
 
 #funcion principal del proyecto
 def main():
-   restaurante = Restaurante()
-
-   restaurante.add_menu_item("Pizza", 12.99)
-   restaurante.add_menu_item("Bebida", 2.99)
-   restaurante.update_stock("Pizza", 10)
-   restaurante.update_stock("Bebida", 20)
-   restaurante.register_customer("cf", Customer())
-   while True:
+    restaurante = Restaurante() 
+    
+    restaurante.add_menu_item("Pizza", 12.99)
+    restaurante.add_menu_item("Bebida", 2.99)
+    restaurante.update_stock("Pizza", 10)
+    restaurante.update_stock("Bebida", 20)
+    restaurante.register_customer("cf", Customer())
+    
+    while True:
         action = input('Que desea realizar:'
                        +'\n1.Tomar pedido'
                        +'\n2.Preparar pedido'
@@ -207,11 +224,10 @@ def main():
         match(action):
                 case '1':
                     add_orden(restaurante)
-                    print()
                 case '2':
-                    pass
+                    print(restaurante.prepare_order())
                 case '3':
-                    pass
+                    print(restaurante.complete_order())
                 case '4':
                     for _ in range(2):
                         user = input('Ingrese el nombre de usuario:\n')
@@ -222,6 +238,8 @@ def main():
                             break
                 case '5':
                     break
+        print(restaurante.show_orders())
+        input()
 
 
 if __name__ == "__main__":
