@@ -29,7 +29,8 @@ class Restaurante:
     # number, nit, items {name: (quant, price)}, status 
 
     def take_order(self, nit, items):
-        order_number = self.orders.queue[0]["number"] + 1 if not self.orders.empty() else 1
+        self.customers[nit].add_order()
+        order_number = self.orders.queue[-1]["number"] + 1 if not self.orders.empty() else 1
         order = {"number": order_number, "customer": nit, "items": items, "status": "pendiente"}
         self.orders.put(order)
         return order
@@ -47,7 +48,7 @@ class Restaurante:
 
     def complete_order(self):
         if self.orders_ready.empty():
-            return "No hay ordenees pendientes de entrega"
+            return "No hay ordenes pendientes de entrega"
         order = self.orders_ready.get()
         order["status"] = "Entregada"
         self.completed_orders.append(order)
@@ -64,17 +65,20 @@ class Restaurante:
 
     def show_orders(self):
         orders_txt = "Ordenes listas\n"
-        if self.orders.empty():
+        if self.orders_ready.empty():
             return "No hay ordenes listas"
         for order in self.orders_ready.queue:
-            orders_txt += f"Orden {order['number']}\n"
+            orders_txt += f"Orden {order['number']} para {self.customers[order['customer']].get_name()}\n"
         return orders_txt
 
 #funcion para actualizar stock de platillos 
 def update_stock(restaurant):
     try:
         product = input('Ingrese el nombre del producto: \n')
-        new_stock = int(input('Ingrese cuanta cantidad desea agregar al stock acctual: \n'))
+        new_stock = input('Ingrese la cantidad que desea agregar al stock acctual: \n')
+        while not new_stock.isnumeric():
+            new_stock = int(input('Ingrese la cantidad que desea agregar al stock acctual: \n'))
+        new_stock = int(new_stock)
         if product in restaurant.stock:
             restaurant.update_stock(product, new_stock)
             print('Producto actualizado correctamente!')
@@ -85,7 +89,12 @@ def update_stock(restaurant):
 def update_price(restaurant):
     try:
         product = input('Ingrese el nombre del producto: \n')
-        new_price = int(input('Ingrese el nuevo precio del producto: \n'))
+
+        new_price = input('Ingrese el nuevo precio del producto: \n')
+        while not str.replace(".", "").isnumeric():
+            new_price = input('Ingrese el nuevo precio del producto: \n')
+        new_price = float(new_price)
+
         if product in restaurant.stock:
             restaurant.update_price(product, new_price)
             print('Producto actualizado correctamente!')
@@ -97,10 +106,9 @@ def update_price(restaurant):
 def add_menu(restaurant):
     try:
         product = input('Ingrese el nombre del producto: \n')
-        price = int(input('Ingrese el nuevo precio del producto: \n'))
-        if product in restaurant.stock:
-            restaurant.add_menu_item(product, price)
-            print('Producto agregado correctamente!')
+        price = float(input('Ingrese el nuevo precio del producto: \n'))
+        restaurant.add_menu_item(product, price)
+        print('Producto agregado correctamente!')
     except ValueError:
         print('Se ingreso un tipo de valor incorrecto!')
 
@@ -172,7 +180,10 @@ def add_orden(restaurante:Restaurante):
             if item_name == 'Fin':
                 break
             if item_name in restaurante.menu:
-                quantity = int(input(f"Cantidad de {item_name}: "))
+                quantity = input(f"Cantidad de {item_name}: ")
+                while not quantity.isnumeric():
+                    quantity = input(f"Cantidad de {item_name}: ")
+                quantity = int(quantity)
                 if item_name in restaurante.stock and quantity <= restaurante.stock[item_name]:
                     price = restaurante.menu[item_name]
                     items[item_name] = (quantity, price)
@@ -184,7 +195,7 @@ def add_orden(restaurante:Restaurante):
         if items:
             order = restaurante.take_order(customer_nit, items)
             print(restaurante.generate_invoice(order))
-            
+            print()
             print(f"Pedido No.{order['number']} pendiente de preparacion.")
             
 
@@ -238,8 +249,8 @@ def main():
                             break
                 case '5':
                     break
-        print(restaurante.show_orders())
         input()
+        print(restaurante.show_orders())
 
 
 if __name__ == "__main__":
