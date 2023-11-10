@@ -83,7 +83,9 @@ class Restaurante:
 
 #funcion para actualizar stock de platillos 
 def update_stock(restaurant, product = ''):
-    print("Inventario actual")
+    print('--------------------')
+    print("| Inventario actual |")
+    print('--------------------')
     for x in restaurant.stock:
         print(f"{x} {restaurant.stock[x]}")
 
@@ -96,9 +98,13 @@ def update_stock(restaurant, product = ''):
         new_stock = int(new_stock)
         if product in restaurant.stock:
             restaurant.update_stock(product, new_stock)
-            print('Producto actualizado correctamente!')
+            print('---------------------------------------')
+            print('| Producto actualizado correctamente! |')
+            print('---------------------------------------')
     except ValueError:
-        print('Se ingreso un tipo de valor incorrecto!')
+        print('------------------------------------------')
+        print('| Se ingreso un tipo de valor incorrecto! |')
+        print('------------------------------------------')
 
 #funcion para actualizar precios de platillos 
 def update_price(restaurant):
@@ -112,9 +118,13 @@ def update_price(restaurant):
 
         if product in restaurant.stock:
             restaurant.update_price(product, new_price)
-            print('Producto actualizado correctamente!')
+            print('--------------------------------------')
+            print('| Producto actualizado correctamente! |')
+            print('--------------------------------------')
     except ValueError:
-        print('Se ingreso un tipo de valor incorrecto!')
+        print('------------------------------------------')
+        print('| Se ingreso un tipo de valor incorrecto! |')
+        print('------------------------------------------')
 
 
 #funcion para agregar alimentos al menu
@@ -124,12 +134,19 @@ def add_menu(restaurant):
         price = float(input('Ingrese el nuevo precio del producto: \n'))
         restaurant.add_menu_item(product, price)
         update_stock(restaurant, product)
-        print('Producto agregado correctamente!')
+        print('-----------------------------------')
+        print('| Producto agregado correctamente! |')
+        print('-----------------------------------')
     except ValueError:
-        print('Se ingreso un tipo de valor incorrecto!')
+        print('------------------------------------------')
+        print('| Se ingreso un tipo de valor incorrecto! |')
+        print('------------------------------------------')
 
 #menu para el personal del restaurante
 def menu_admin(restaurant):
+    print('-----------------------')
+    print('-     BIENVENIDO      -')
+    print('-----------------------')
     while True:
         #aqui se añaden las opciones de ver el estado de las ordenes
         print('Bienvenido al sistema del restaurante')
@@ -149,9 +166,6 @@ def menu_admin(restaurant):
                     print(restaurant.customers[nit])
             case '6':
                 break
-            case __:
-                print('Ingreso una opcion fuera del reango!')
-        input()
 
 #region
 def buscar_cliente(clientes, nit):
@@ -247,6 +261,9 @@ def main():
     restaurante.update_stock("Bebida", 20)
     restaurante.register_customer("cf", Customer())
     
+    print('-----------------------')
+    print('-     BIENVENIDO      -')
+    print('-----------------------')
     while True:
         action = input('Que desea realizar:'
                        +'\n1.Tomar pedido'
@@ -269,6 +286,10 @@ def main():
                         if user == 'admin' and password == 'admin123':
                             menu_admin(restaurante)
                             break
+                        else:
+                            print('-----------------------------------------------------------')
+                            print('| El usuario o contraseña de administrador son incorrectos |')
+                            print('-----------------------------------------------------------')
                 case '5':
                     print("Resumen de ordenes de hoy")
                     print(restaurante.todays_orders())
